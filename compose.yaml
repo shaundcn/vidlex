@@ -1,6 +1,6 @@
 # 只需要改两个文件夹路径（冒号左边）。
 # 端口默认 8462；要换端口，在本文件旁的 .env 写 VIDLEX_PORT=9000，或运行 VIDLEX_PORT=9000 docker compose up -d
-# 镜像从 Docker Hub 拉（私有仓库，先 docker login 一次）；更新用 docker compose pull && docker compose up -d
+# 镜像从 Docker Hub 公开仓库拉；更新用 docker compose pull && docker compose up -d
 services:
   vidlex:
     image: shaundcn/vidlex:latest

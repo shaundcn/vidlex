@@ -6,12 +6,11 @@
 
 ## 部署
 
-1. 镜像在 Docker Hub 的私有仓库 `shaundcn/vidlex`，NAS 上先登录一次：`docker login -u shaundcn`（密码处填 Docker Hub 的访问令牌）。
-2. 把 `compose.yaml` 复制到 NAS 上的一个文件夹，把里面的两个路径改成 NAS 上的实际文件夹：
+1. 把 `compose.yaml` 复制到 NAS 上的一个文件夹，把里面的两个路径改成 NAS 上的实际文件夹：
    - `/视频文件夹`：软件在里面自动建 `input` 和 `output`；
    - `/数据文件夹`：设置、任务记录和日志。**必须在 NAS 本地磁盘上，不能是网络共享**（SQLite 在网络共享上可能损坏）。
-3. 在该目录执行 `docker compose up -d`，浏览器打开 `http://NAS的IP:8462`。
-4. 升级：`docker compose pull && docker compose up -d`。
+2. 在该目录执行 `docker compose up -d`，浏览器打开 `http://NAS的IP:8462`。
+3. 升级：`docker compose pull && docker compose up -d`。
 
 NAS 的 Docker 界面不支持 compose 时，用下面这条和 `compose.yaml` 等价的命令（同样的自动重启、健康检查和日志滚动）：
 
@@ -65,7 +64,7 @@ uv run --env-file .env pytest -m real -q  # 真实方舟测试：会产生少量
 cp .env.example .env                      # 填写开发用的 data 和视频库路径（绝对路径）
 cd backend && uv run --env-file ../.env python -m app.main   # 启动，端口 8462
 docker build -t vidlex/vidlex:latest .    # 构建镜像
-scripts/push-image.sh                     # 构建并推到 Docker Hub（shaundcn/vidlex:v版本号 和 latest），先 docker login
+scripts/push-image.sh                     # 构建并推到 Docker Hub（shaundcn/vidlex:v版本号 和 latest），推送前先 docker login
 scripts/deploy.sh 用户@NAS地址            # 部署到 NAS（第一次部署加参数：视频库路径 data路径 [端口]）：先备份 data、保留旧容器，结束时打印回滚命令（技术选型第 6 节）
 ```
 
