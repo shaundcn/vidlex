@@ -1,0 +1,54 @@
+[project]
+name = "vidlex"
+version = "0.5.1"  # 唯一写版本号的地方；镜像标签是 v 加版本号（scripts/deploy.sh 从这里读）
+description = "把 NAS 上的短视频变成可读、可搜的 md 笔记"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "httpx2",
+    "pyyaml",
+    "markdown-it-py",
+    "pydantic",  # 随 FastAPI 安装；api/schemas.py 直接导入，所以显式声明
+    "starlette>=0.49.1",  # CVE-2025-62727（技术选型第 2 节）
+]
+
+[dependency-groups]
+dev = [
+    "pyright>=1.1.414",
+    "pytest",
+    "ruff>=0.16.10",
+]
+
+[tool.uv]
+package = false
+# 只用发布满两周的版本（技术选型 13.3）；每次升级依赖时把日期改成当天往前 14 天
+exclude-newer = "2026-10-09T00:00:00Z"
+
+[tool.pytest.ini_options]
+pythonpath = ["backend"]
+testpaths = ["tests"]
+# 真实方舟测试会花钱：默认不跑，用 `uv run --env-file .env pytest -m real` 显式运行
+addopts = '-m "not real"'
+# /tmp 在这台 VPS 上是内存盘：只保留失败那次的临时目录，避免挤占空间触发“存储空间不足”
+tmp_path_retention_count = 1
+tmp_path_retention_policy = "failed"
+markers = ["real: 调用真实方舟接口（需要环境变量 VIDLEX_TEST_ARK_KEY，会产生少量费用）"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "B", "UP", "ASYNC", "RUF"]
+# 中文全角标点是有意写的
+ignore = ["RUF001", "RUF002", "RUF003"]
+
+[tool.ruff.lint.per-file-ignores]
+# 测试里有意直接用阻塞的文件和进程调用
+"tests/**" = ["ASYNC"]
+
+[tool.pyright]
+include = ["backend/app"]
+pythonVersion = "3.13"
+typeCheckingMode = "standard"

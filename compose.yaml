@@ -1,0 +1,24 @@
+# 只需要改两个文件夹路径（冒号左边）。
+# 端口默认 8462；要换端口，在本文件旁的 .env 写 VIDLEX_PORT=9000，或运行 VIDLEX_PORT=9000 docker compose up -d
+# 镜像从 Docker Hub 拉（私有仓库，先 docker login 一次）；更新用 docker compose pull && docker compose up -d
+services:
+  vidlex:
+    image: shaundcn/vidlex:latest
+    ports:
+      - "${VIDLEX_PORT:-8462}:8462"
+    volumes:
+      - /视频文件夹:/library
+      - /数据文件夹:/data
+    # 以下为默认设置，无需更改
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8462/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
