@@ -5,6 +5,7 @@ import json
 import logging
 import shutil
 import sqlite3
+from urllib.parse import quote
 
 import pytest
 
@@ -213,7 +214,7 @@ async def test_view_completed(api) -> None:
 async def test_view_escapes_html(api) -> None:
     app, client = api
     task_id = await completed(app)
-    md = app.state.runtime.lib.path(f"output/教程/{TITLE}.md")
+    md = app.state.runtime.lib.path(f"output/{TITLE}.md")
     md.write_text(md.read_text() + "\n<img src=x onerror=alert(1)>\n\n[点我](javascript:alert(1))\n")
     html = (await client.get(f"/api/tasks/{task_id}/view")).json()["md_html"]
     assert "<img" not in html and "&lt;img src=x onerror=alert(1)&gt;" in html
@@ -224,7 +225,7 @@ async def test_view_missing_files(api) -> None:
     app, client = api
     task_id = await completed(app)
     lib = app.state.runtime.lib
-    lib.path(f"output/教程/{TITLE}.md").unlink()
+    lib.path(f"output/{TITLE}.md").unlink()
     view = (await client.get(f"/api/tasks/{task_id}/view")).json()
     assert view["md_exists"] is False and view["md_html"] is None and view["video_exists"]
     lib.path(f"output/video/{TITLE}.mp4").unlink()
@@ -256,6 +257,28 @@ async def test_video_404_and_422(api) -> None:
     assert (await client.get("/api/tasks/999/video")).status_code == 404
     assert (await client.get("/api/tasks/abc/video")).status_code == 422
     assert (await client.get("/api/tasks/999/view")).json() == {"detail": "任务不存在"}
+
+
+async def test_md_download(api) -> None:
+    app, client = api
+    task_id = await completed(app)
+    resp = await client.get(f"/api/tasks/{task_id}/md")
+    assert resp.status_code == 200 and resp.headers["content-type"] == "text/markdown; charset=utf-8"
+    # 中文文件名按 RFC 5987 编码，浏览器下载时显示原名
+    assert resp.headers["content-disposition"] == f"attachment; filename*=utf-8''{quote(TITLE + '.md')}"
+    assert resp.content == app.state.runtime.lib.path(f"output/{TITLE}.md").read_bytes()  # 原样，含信息块和嵌入行
+
+
+async def test_md_download_404_and_422(api) -> None:
+    app, client = api
+    queued = add_video(app, "排队中.mp4")  # 还没有 md
+    assert (await client.get(f"/api/tasks/{queued}/md")).json() == {"detail": "文件不存在"}
+    task_id = await completed(app)
+    app.state.runtime.lib.path(f"output/{TITLE}.md").unlink()
+    resp = await client.get(f"/api/tasks/{task_id}/md")
+    assert resp.status_code == 404 and resp.json() == {"detail": "文件不存在"}
+    assert (await client.get("/api/tasks/999/md")).json() == {"detail": "任务不存在"}
+    assert (await client.get("/api/tasks/abc/md")).status_code == 422
 
 
 # ---- 设置 ----

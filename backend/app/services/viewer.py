@@ -52,11 +52,13 @@ async def load_view(conn: sqlite3.Connection, library: Library, task_id: int) ->
 
 async def video_file(conn: sqlite3.Connection, library: Library, task_id: int) -> tuple[Path, str]:
     """返回视频的真实路径和类型；不存在时 NotFound。"""
-    task = _task(conn, task_id)
-    path = await asyncio.to_thread(_existing, library, task["current_video_path"])
-    if path is None:
-        raise NotFound("文件不存在")
+    path = await _file(conn, library, task_id, "current_video_path")
     return path, VIDEO_TYPES.get(path.suffix.lower(), "application/octet-stream")
+
+
+async def md_file(conn: sqlite3.Connection, library: Library, task_id: int) -> Path:
+    """返回 md 的真实路径，供下载；不存在时 NotFound。"""
+    return await _file(conn, library, task_id, "md_path")
 
 
 def render(md_text: str) -> tuple[list[tuple[str, str]], str]:
@@ -89,6 +91,13 @@ def _task(conn: sqlite3.Connection, task_id: int) -> sqlite3.Row:
     if task is None:
         raise NotFound("任务不存在")
     return task
+
+
+async def _file(conn: sqlite3.Connection, library: Library, task_id: int, column: str) -> Path:
+    path = await asyncio.to_thread(_existing, library, _task(conn, task_id)[column])
+    if path is None:
+        raise NotFound("文件不存在")
+    return path
 
 
 def _existing(library: Library, rel: str | None) -> Path | None:

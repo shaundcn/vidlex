@@ -14,7 +14,7 @@ from world import ORIG, TITLE, PowerLoss, World, power_loss_after
 
 pytestmark = pytest.mark.anyio
 
-MD = f"output/教程/{TITLE}.md"
+MD = f"output/{TITLE}.md"
 VIDEO_DONE = f"output/video/{TITLE}.mp4"
 VIDEO_IN = f"input/{ORIG}"
 VIDEO_IGNORED = "output/ignored/设计师小王&抖音&PS抠头发教程.mp4"

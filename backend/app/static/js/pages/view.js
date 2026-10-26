@@ -1,10 +1,11 @@
 // 查看页 view.html?task=ID（立项 4.4，技术选型 12.5）：在新标签页打开，只看一个任务，打开时读取一次。
-// 已完成：上面视频、下面 md；未完成：只显示视频。全站唯一使用 innerHTML 的地方：
+// 已完成：上面视频、下面 md，md 在时标题下方有“下载 md”；未完成：只显示视频。全站唯一使用 innerHTML 的地方：
 // 写入后端渲染好的 md 正文（后端已关闭原始 HTML、拦截危险链接）。
 
 import { api } from "../core/api.js";
 import { $, h, replace } from "../core/dom.js";
 import { displayName } from "../core/format.js";
+import { icon } from "../core/icons.js";
 import { empty, failure, loadingAfter } from "../ui/states.js";
 import { tag } from "../ui/tag.js";
 
@@ -40,12 +41,20 @@ function render(view) {
   const header = h("header", {},
     h("h1", { class: "title-lg" }, name),
     view.title ? h("p", { class: "text-small" }, view.original_name) : null,
-    view.status !== "completed" ? h("p", { class: "status-note" }, tag(view.status)) : null);
+    view.status !== "completed" ? h("p", { class: "status-note" }, tag(view.status)) : null,
+    view.status === "completed" && view.md_exists ? downloadLink(view) : null);
   if (view.status !== "completed") {
     replace(main, header, h("div", { class: "view-single" }, player(view)));
     return;
   }
   replace(main, header, h("div", { class: "view-layout" }, player(view), mdPanel(view)));
+}
+
+// 原样下载 md 文件；文件名由后端的 Content-Disposition 给出
+function downloadLink(view) {
+  return h("p", { class: "view-actions" },
+    h("a", { class: "btn btn-outline btn-sm", href: `/api/tasks/${view.id}/md`, download: true },
+      icon("download"), "下载 md"));
 }
 
 function player(view) {

@@ -1,6 +1,6 @@
 [project]
 name = "vidlex"
-version = "0.5.2"  # 唯一写版本号的地方；镜像标签是 v 加版本号（scripts/deploy.sh 从这里读）
+version = "0.5.3"  # 唯一写版本号的地方；镜像标签是 v 加版本号（scripts/deploy.sh 从这里读）
 description = "把 NAS 上的短视频变成可读、可搜的 md 笔记"
 requires-python = ">=3.13,<3.14"
 dependencies = [

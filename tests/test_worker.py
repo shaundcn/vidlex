@@ -28,7 +28,7 @@ from world import ORIG, TITLE, World
 pytestmark = pytest.mark.anyio
 
 VIDEO_IN = f"input/{ORIG}"
-MD = f"output/教程/{TITLE}.md"
+MD = f"output/{TITLE}.md"  # 视频在 input/教程/ 里，md 不保留这层目录
 DAY = 86400
 
 
@@ -100,10 +100,20 @@ async def test_numbering_when_names_taken(env: Env) -> None:
     env.w.file(f"output/video/{TITLE}.mp4").write_bytes(b"other")  # 只在 video 里重名，md 也要跟着编号
     await env.worker.process(task_id)
     task = env.task(task_id)
-    assert task["md_path"] == f"output/教程/{TITLE}(1).md"
+    assert task["md_path"] == f"output/{TITLE}(1).md"
     assert task["current_video_path"] == f"output/video/{TITLE}(1).mp4"
     assert f"![[{TITLE}(1).mp4]]" in env.w.file(task["md_path"]).read_text()
     assert env.w.file(f"output/video/{TITLE}.mp4").read_bytes() == b"other"
+
+
+async def test_numbering_when_md_name_taken(env: Env) -> None:
+    task_id = await env.setup()
+    env.w.file(MD).write_text("别的文件夹里同标题视频的 md")  # md 平铺后，不同文件夹的同名标题会撞名
+    await env.worker.process(task_id)
+    task = env.task(task_id)
+    assert task["md_path"] == f"output/{TITLE}(1).md"
+    assert task["current_video_path"] == f"output/video/{TITLE}(1).mp4"  # 视频跟着编号
+    assert env.w.file(MD).read_text() == "别的文件夹里同标题视频的 md"
 
 
 # ---- 8.1 重试、时限、影响所有任务 ----

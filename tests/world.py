@@ -66,7 +66,7 @@ class World:
         """worker 在阶段 3b 做的事：写 md 临时文件、选目标、写 commit 记录。"""
         task = repo.get_task(self.conn, task_id)
         ext = Path(task["current_video_path"]).suffix
-        paths = self.journal.pick_commit_paths(task["orig_rel_path"], title, ext)
+        paths = self.journal.pick_commit_paths(title, ext)
         tmp = f".vidlex/tmp/{task_id}/note.md"
         self.lib.write_atomic(tmp, f"![[{paths.video_name}]]\n")
         repo.begin_commit(self.conn, task_id, task["current_video_path"], self.lib.ident(task["current_video_path"]),

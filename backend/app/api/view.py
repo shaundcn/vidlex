@@ -1,4 +1,4 @@
-"""查看页与视频播放（立项 4.4）。只按任务 id 找文件，不接收路径（技术选型 13.12）。"""
+"""查看页、视频播放与 md 下载（立项 4.4）。只按任务 id 找文件，不接收路径（技术选型 13.12）。"""
 
 import sqlite3
 from typing import Annotated
@@ -35,3 +35,13 @@ async def video(
     """FileResponse 自带 Range 请求，浏览器可以拖动播放。"""
     path, media_type = await viewer.video_file(db, library, task_id)
     return FileResponse(path, media_type=media_type)
+
+
+@router.get("/{task_id}/md")
+async def md(
+    task_id: int, db: Annotated[sqlite3.Connection, Depends(get_db)],
+    library: Annotated[Library, Depends(get_library)],
+) -> FileResponse:
+    """原样下载 md 文件；中文文件名由 FileResponse 按 RFC 5987 写进 Content-Disposition。"""
+    path = await viewer.md_file(db, library, task_id)
+    return FileResponse(path, media_type="text/markdown; charset=utf-8", filename=path.name)

@@ -840,6 +840,10 @@ th[aria-sort="descending"] .sort-btn {
   margin: var(--s-6) auto 0;
 }
 
+.view-actions {
+  margin-top: var(--s-3);
+}
+
 .meta-table {
   width: 100%;
   border-collapse: collapse;

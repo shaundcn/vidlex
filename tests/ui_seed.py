@@ -76,7 +76,7 @@ def seed_task(conn: sqlite3.Connection, lib: Library, orig: str, status: str, cr
     title = None
     if status == "completed":
         title = f"{orig.split('&')[-1].removesuffix('.mp4')} 的要点"
-        paths = naming.commit_paths(orig, naming.clean_title(title), 0, ".mp4")
+        paths = naming.commit_paths(naming.clean_title(title), 0, ".mp4")
         title, video = naming.clean_title(title), paths.video_path
         source = naming.split_source(naming.original_filename(orig))
         result = parse_result(json.dumps({
@@ -140,7 +140,7 @@ def seed_special(conn: sqlite3.Connection, lib: Library, now: int) -> None:
     for i, (stem, source, kind) in enumerate(cases):
         orig = f"特殊/{stem}.mp4"
         title = naming.clean_title(f"{stem.split('&')[-1]}（示例）")
-        paths = naming.commit_paths(orig, title, 0, ".mp4")
+        paths = naming.commit_paths(title, 0, ".mp4")
         result = parse_result(json.dumps({
             "title": title,
             "main_content": {

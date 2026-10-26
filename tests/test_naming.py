@@ -61,21 +61,17 @@ def test_numbered() -> None:
     assert len(name.encode()) <= 255 and name.endswith("(1).mp4")
 
 
-def test_commit_paths_share_number() -> None:
-    paths = naming.commit_paths("教程/设计师小王&抖音&PS抠头发教程.mp4", "3 步用 PS 快速抠出发丝", 0, ".mp4")
+def test_commit_paths_flat_and_share_number() -> None:
+    paths = naming.commit_paths("3 步用 PS 快速抠出发丝", 0, ".mp4")
     assert paths == naming.CommitPaths(
-        "output/教程/3 步用 PS 快速抠出发丝.md",
+        "output/3 步用 PS 快速抠出发丝.md",
         "output/video/3 步用 PS 快速抠出发丝.mp4",
         "3 步用 PS 快速抠出发丝.mp4",
     )
-    numbered = naming.commit_paths("根目录视频.MOV", "标题", 1, ".MOV")
+    numbered = naming.commit_paths("标题", 1, ".MOV")
     assert numbered.md_path == "output/标题(1).md"
     assert numbered.video_path == "output/video/标题(1).MOV"
     assert numbered.video_name == "标题(1).MOV"
-
-
-def test_top_level_video_folder_md_goes_to_output_video() -> None:
-    assert naming.commit_paths("video/a.mp4", "标题", 0, ".mp4").md_path == "output/video/标题.md"
 
 
 def test_ignore_and_restore_paths() -> None:

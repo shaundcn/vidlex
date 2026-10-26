@@ -160,7 +160,7 @@ class Worker:
         filename = naming.original_filename(task["orig_rel_path"])
         title = naming.fallback_title(result.title, filename, task_id)
         source = naming.split_source(filename)
-        paths = self.journal.pick_commit_paths(task["orig_rel_path"], title, PurePosixPath(src_rel).suffix)
+        paths = self.journal.pick_commit_paths(title, PurePosixPath(src_rel).suffix)
         md = render_md(title=title, platform=source.platform, author=source.author,
                        original_file=task["orig_rel_path"], video_name=paths.video_name, result=result)
         md_tmp = f"{TMP_DIR}/{task_id}/note.md"

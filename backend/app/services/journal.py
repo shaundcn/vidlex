@@ -75,14 +75,14 @@ class Journal:
         old_md = task["md_path"] if await asyncio.to_thread(self.lib.exists, task["md_path"]) else None
         return await self._begin(task, "redo", ident, target, old_md)
 
-    def pick_commit_paths(self, orig_rel_path: str, title: str, video_ext: str) -> naming.CommitPaths:
+    def pick_commit_paths(self, title: str, video_ext: str) -> naming.CommitPaths:
         """选不重名的 md 和视频目标：两处都没被占用才可用，用同一个编号（立项第 6 节）。"""
         def candidates(n: int) -> tuple[str, str]:
-            paths = naming.commit_paths(orig_rel_path, title, n, video_ext)
+            paths = naming.commit_paths(title, n, video_ext)
             return paths.md_path, paths.video_path
 
         n = self._pick_number(candidates)
-        return naming.commit_paths(orig_rel_path, title, n, video_ext)
+        return naming.commit_paths(title, n, video_ext)
 
     async def run_commit(self, task_id: int) -> sqlite3.Row | None:
         """worker 写好 commit 记录后调用。源视频被替换时任务被删除，返回 None。"""

@@ -85,12 +85,11 @@ def numbered(stem: str, n: int, ext: str) -> str:
     return stem + suffix
 
 
-def commit_paths(orig_rel_path: str, title: str, n: int, video_ext: str) -> CommitPaths:
-    """md 放进 output 里对应的子目录，视频放进 output/video/；两者用同一个编号。"""
-    folder = PurePosixPath("output") / PurePosixPath(orig_rel_path).parent
+def commit_paths(title: str, n: int, video_ext: str) -> CommitPaths:
+    """md 放进 output/，视频放进 output/video/，都不保留原目录结构；两者用同一个编号。"""
     video_name = numbered(title, n, video_ext)
     return CommitPaths(
-        md_path=str(folder / numbered(title, n, ".md")),
+        md_path=f"output/{numbered(title, n, '.md')}",
         video_path=f"output/video/{video_name}",
         video_name=video_name,
     )
