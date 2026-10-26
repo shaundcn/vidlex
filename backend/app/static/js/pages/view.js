@@ -1,5 +1,5 @@
 // 查看页 view.html?task=ID（立项 4.4，技术选型 12.5）：在新标签页打开，只看一个任务，打开时读取一次。
-// 已完成：上面视频、下面 md，md 在时标题下方有“下载 md”；未完成：只显示视频。全站唯一使用 innerHTML 的地方：
+// 已完成：上面视频、下面 md；未完成：只显示视频。视频右下角是下载按钮。全站唯一使用 innerHTML 的地方：
 // 写入后端渲染好的 md 正文（后端已关闭原始 HTML、拦截危险链接）。
 
 import { api } from "../core/api.js";
@@ -41,20 +41,27 @@ function render(view) {
   const header = h("header", {},
     h("h1", { class: "title-lg" }, name),
     view.title ? h("p", { class: "text-small" }, view.original_name) : null,
-    view.status !== "completed" ? h("p", { class: "status-note" }, tag(view.status)) : null,
-    view.status === "completed" && view.md_exists ? downloadLink(view) : null);
+    view.status !== "completed" ? h("p", { class: "status-note" }, tag(view.status)) : null);
   if (view.status !== "completed") {
-    replace(main, header, h("div", { class: "view-single" }, player(view)));
+    replace(main, header, h("div", { class: "view-single" }, videoArea(view)));
     return;
   }
-  replace(main, header, h("div", { class: "view-layout" }, player(view), mdPanel(view)));
+  replace(main, header, h("div", { class: "view-layout" }, videoArea(view), mdPanel(view)));
 }
 
-// 原样下载 md 文件；文件名由后端的 Content-Disposition 给出
-function downloadLink(view) {
-  return h("p", { class: "view-actions" },
-    h("a", { class: "btn btn-outline btn-sm", href: `/api/tasks/${view.id}/md`, download: true },
-      icon("download"), "下载 md"));
+// 视频和它右下角的下载按钮（2026-10-26 用户要求）：视频在时“下载视频”，已完成且 md 在时“下载 md”。
+// 浏览器播放不了时也显示，可以下载到本机播放
+function videoArea(view) {
+  const links = [
+    view.video_exists ? downloadLink(`/api/tasks/${view.id}/video?download=1`, "下载视频") : null,
+    view.status === "completed" && view.md_exists ? downloadLink(`/api/tasks/${view.id}/md`, "下载 md") : null,
+  ].filter(Boolean);
+  return h("div", {}, player(view), links.length ? h("div", { class: "view-actions" }, ...links) : null);
+}
+
+// 原样下载文件；文件名由后端的 Content-Disposition 给出
+function downloadLink(href, text) {
+  return h("a", { class: "btn btn-outline btn-sm", href, download: true }, icon("download"), text);
 }
 
 function player(view) {

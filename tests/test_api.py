@@ -250,6 +250,16 @@ async def test_video_range(api) -> None:
     part = await client.get(f"/api/tasks/{task_id}/video", headers={"range": "bytes=0-99"})
     assert part.status_code == 206 and len(part.content) == 100
     assert part.headers["content-range"].startswith("bytes 0-99/")
+    assert "content-disposition" not in full.headers  # 播放用，不当附件
+
+
+async def test_video_download(api) -> None:
+    app, client = api
+    task_id = await completed(app)
+    resp = await client.get(f"/api/tasks/{task_id}/video", params={"download": "1"})
+    assert resp.status_code == 200 and resp.headers["content-type"] == "video/mp4"
+    assert resp.headers["content-disposition"] == f"attachment; filename*=utf-8''{quote(TITLE + '.mp4')}"
+    assert resp.content == app.state.runtime.lib.path(f"output/video/{TITLE}.mp4").read_bytes()
 
 
 async def test_video_404_and_422(api) -> None:

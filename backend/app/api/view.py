@@ -30,11 +30,11 @@ async def view(
 @router.get("/{task_id}/video")
 async def video(
     task_id: int, db: Annotated[sqlite3.Connection, Depends(get_db)],
-    library: Annotated[Library, Depends(get_library)],
+    library: Annotated[Library, Depends(get_library)], download: bool = False,
 ) -> FileResponse:
-    """FileResponse 自带 Range 请求，浏览器可以拖动播放。"""
+    """FileResponse 自带 Range 请求，浏览器可以拖动播放；download=1 时作为附件下载，文件名是视频的文件名。"""
     path, media_type = await viewer.video_file(db, library, task_id)
-    return FileResponse(path, media_type=media_type)
+    return FileResponse(path, media_type=media_type, filename=path.name if download else None)
 
 
 @router.get("/{task_id}/md")

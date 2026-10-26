@@ -840,7 +840,12 @@ th[aria-sort="descending"] .sort-btn {
   margin: var(--s-6) auto 0;
 }
 
+/* 视频右下角的下载按钮 */
 .view-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--s-2);
   margin-top: var(--s-3);
 }
 
